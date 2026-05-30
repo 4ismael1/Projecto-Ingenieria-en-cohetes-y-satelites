@@ -10,6 +10,7 @@ Proyecto académico para la asignatura **Ingeniería de Cohetes y Satélites**. 
 - `styles.css`: diseño visual, layout responsive y estilos de impresión.
 - `script.js`: cálculos, presets, validaciones, gráficos y exportación.
 - `formulas.md`: fórmulas, variables, unidades y supuestos.
+- `MANUAL_USUARIO.md`: guía paso a paso para usar la herramienta y generar simulaciones.
 - `prompt_history_template.md`: plantilla para documentar el uso de IA.
 - `assets/`: carpeta para capturas, PDF del historial o recursos opcionales.
 
