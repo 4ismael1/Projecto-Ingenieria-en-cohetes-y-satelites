@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbital Systems Sizer - Dimensionamiento Preliminar de Satélites</title>
+  <meta name="description" content="Herramienta académica de dimensionamiento preliminar para comunicaciones y potencia en vehículos espaciales.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="header-identity">
+      <div class="logo" aria-hidden="true"><span class="logo-dot"></span></div>
+      <div>
+        <div class="header-title">Orbital Systems Sizer</div>
+        <div class="header-tagline">Dimensionamiento preliminar · Comunicaciones y Potencia</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="header-status">
+        <span class="status-indicator" id="statusDot"></span>
+        <strong id="calculationState">Sin calcular</strong>
+      </div>
+      <button class="btn btn-ghost" id="resetBtn" type="button" title="Restablecer">⟲ Reset</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="step-nav" aria-label="Pasos de diseño">
+      <button class="step-btn active" data-target="mission" type="button"><span class="step-number">1</span><span class="step-label">Misión</span></button>
+      <button class="step-btn" data-target="communications" type="button"><span class="step-number">2</span><span class="step-label">Comunicaciones</span></button>
+      <button class="step-btn" data-target="power" type="button"><span class="step-number">3</span><span class="step-label">Potencia</span></button>
+      <button class="step-btn" data-target="results" type="button"><span class="step-number">4</span><span class="step-label">Resultados</span></button>
+      <button class="step-btn" data-target="reference" type="button"><span class="step-number">5</span><span class="step-label">Referencia</span></button>
+    </nav>
+
+    <main class="main-content" role="main">
+      <div class="status-bar" aria-live="polite">
+        <span class="status-indicator" id="statusDotBar"></span>
+        <p id="stateMessage">Ajusta los parámetros — los resultados se actualizan automáticamente.</p>
+      </div>
+
+      <!-- ===== STEP 1: MISSION ===== -->
+      <section class="step-panel active" data-step="mission" id="mission">
+        <div class="section-header">
+          <div class="section-overline">Paso 1</div>
+          <h1 class="section-title">Configuración de misión</h1>
+          <p class="section-desc">Define el escenario orbital y tipo de vehículo. El simulador se adapta a tu selección y a los datos calculados.</p>
+        </div>
+
+        <div class="satellite-card">
+          <div class="satellite-canvas" id="satelliteCanvas"></div>
+          <div class="satellite-info">
+            <span class="satellite-type" id="satTypeLabel">CubeSat</span>
+            <span id="satOrbitLabel">LEO · 500 km</span>
+          </div>
+        </div>
+
+        <div class="preset-bar">
+          <div class="field">
+            <label class="field-label" for="presetSelect">Preset de misión (Carga automática)</label>
+            <select id="presetSelect">
+              <option value="uhfcubesat">CubeSat UHF (Telemetría baja tasa)</option>
+              <option value="cubesat" selected>CubeSat LEO (Demo básico)</option>
+              <option value="microsat">Microsatélite (Observación terrestre)</option>
+              <option value="smallsar">SmallSat SAR (Alta demanda EPS)</option>
+              <option value="geocomm">Satélite GEO (Comunicaciones pesadas)</option>
+              <option value="lunarrelay">Relay lunar simplificado</option>
+              <option value="probe">Sonda Interplanetaria (Espacio profundo)</option>
+              <option value="custom">Caso personalizado</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Parámetros de misión</legend>
+          <div class="field-group">
+            <div class="field-row field-row-3">
+              <div class="field"><label class="field-label" for="missionName">Nombre de misión</label><input id="missionName" type="text" value="CubeSat LEO Demo"></div>
+              <div class="field"><label class="field-label" for="vehicleType">Tipo de vehículo</label><select id="vehicleType"><option>CubeSat</option><option>Nanosatélite</option><option>Microsatélite</option><option>Satélite pequeño</option><option>Plataforma GEO</option><option>Relay lunar</option><option>Sonda</option><option>Otro</option></select></div>
+              <div class="field"><label class="field-label" for="orbitType">Tipo de órbita</label><select id="orbitType"><option>LEO</option><option>MEO</option><option>GEO</option><option>Personalizada</option></select></div>
+            </div>
+            <div class="field-row field-row-3">
+              <div class="field field-unit"><label class="field-label" for="altitudeKm">Altitud orbital</label><input id="altitudeKm" type="number" min="1" step="1" value="500"><span class="unit-tag">km</span></div>
+              <div class="field field-unit"><label class="field-label" for="missionYears">Duración de misión</label><input id="missionYears" type="number" min="0" step="0.1" value="1"><span class="unit-tag">años</span></div>
+              <div class="field field-unit"><label class="field-label" for="generalMarginPct">Margen general</label><input id="generalMarginPct" type="number" min="0" step="1" value="20"><span class="unit-tag">%</span></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="step-actions"><div></div><div class="step-actions-right"><button class="btn btn-primary" data-goto="communications" type="button">Comunicaciones →</button></div></div>
+      </section>
+
+      <!-- ===== STEP 2: COMMUNICATIONS ===== -->
+      <section class="step-panel" data-step="communications" id="communications">
+        <div class="section-header">
+          <div class="section-overline">Paso 2</div>
+          <h2 class="section-title">Sistema de comunicaciones</h2>
+          <p class="section-desc">Presupuesto de enlace — los resultados se actualizan al modificar cualquier valor.</p>
+        </div>
+
+        <form id="commForm" onsubmit="return false">
+          <fieldset>
+            <legend>Enlace</legend>
+            <div class="field-group">
+              <label class="check-field"><input id="estimateDistance" type="checkbox" checked><span>Estimar distancia desde altitud</span></label>
+              <div class="field-row field-row-3">
+                <div class="field field-unit"><label class="field-label" for="linkDistanceKm">Distancia</label><input id="linkDistanceKm" type="number" min="1" step="1" value="1000"><span class="unit-tag">km</span></div>
+                <div class="field"><label class="field-label" for="linkType">Tipo de enlace</label><select id="linkType"><option>Downlink</option><option>Uplink</option><option>Inter-satélite</option></select></div>
+                <div class="field field-unit"><label class="field-label" for="requiredMarginDb">Margen req.</label><input id="requiredMarginDb" type="number" step="0.1" value="3"><span class="unit-tag">dB</span></div>
+              </div>
+              <div class="field-row field-row-4">
+                <div class="field"><label class="field-label" for="frequencyValue">Frecuencia</label><input id="frequencyValue" type="number" min="0" step="0.01" value="2.2"></div>
+                <div class="field"><label class="field-label" for="frequencyUnit">Unidad</label><select id="frequencyUnit"><option value="GHz">GHz</option><option value="MHz">MHz</option></select></div>
+                <div class="field"><label class="field-label" for="dataRateValue">Tasa de datos</label><input id="dataRateValue" type="number" min="0" step="1" value="9600"></div>
+                <div class="field"><label class="field-label" for="dataRateUnit">Unidad</label><select id="dataRateUnit"><option value="bps">bps</option><option value="kbps">kbps</option><option value="Mbps">Mbps</option></select></div>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Transmisor</legend>
+            <div class="field-row field-row-4">
+              <div class="field field-unit"><label class="field-label" for="txPowerW">Potencia TX</label><input id="txPowerW" type="number" min="0" step="0.1" value="2"><span class="unit-tag">W</span></div>
+              <div class="field field-unit"><label class="field-label" for="txGainDbi">Ganancia TX</label><input id="txGainDbi" type="number" step="0.1" value="2"><span class="unit-tag">dBi</span></div>
+              <div class="field field-unit"><label class="field-label" for="txLineLossDb">Pérd. línea</label><input id="txLineLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+              <div class="field field-unit"><label class="field-label" for="implementationLossDb">Pérd. impl.</label><input id="implementationLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Receptor / estación terrena</legend>
+            <div class="field-group">
+              <div class="field-row field-row-3">
+                <div class="field field-unit"><label class="field-label" for="rxGainDbi">Ganancia RX</label><input id="rxGainDbi" type="number" step="0.1" value="20"><span class="unit-tag">dBi</span></div>
+                <div class="field field-unit"><label class="field-label" for="rxLineLossDb">Pérd. línea RX</label><input id="rxLineLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+                <div class="field field-unit"><label class="field-label" for="noiseTempK">Temp. ruido</label><input id="noiseTempK" type="number" min="1" step="1" value="500"><span class="unit-tag">K</span></div>
+              </div>
+              <div class="field-row field-row-4">
+                <div class="field field-unit"><label class="field-label" for="requiredEbNoDb">Eb/N₀ req.</label><input id="requiredEbNoDb" type="number" step="0.1" value="10"><span class="unit-tag">dB</span></div>
+                <div class="field field-unit"><label class="field-label" for="atmosphericLossDb">Pérd. atmos.</label><input id="atmosphericLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+                <div class="field field-unit"><label class="field-label" for="pointingLossDb">Pérd. apunt.</label><input id="pointingLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+                <div class="field field-unit"><label class="field-label" for="otherLossDb">Otras pérd.</label><input id="otherLossDb" type="number" min="0" step="0.1" value="1"><span class="unit-tag">dB</span></div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+
+        <!-- Key Metrics -->
+        <div class="key-metrics" id="commKeyMetrics" style="display:none">
+          <div class="key-metric highlight" id="commMarginCard"><span class="key-metric-label">Margen enlace</span><span class="key-metric-value" id="commMarginVal">—</span><span class="key-metric-unit">dB</span></div>
+          <div class="key-metric"><span class="key-metric-label">Eb/N₀</span><span class="key-metric-value" id="commEbnoVal">—</span><span class="key-metric-unit">dB</span></div>
+          <div class="key-metric"><span class="key-metric-label">FSPL</span><span class="key-metric-value" id="commFsplVal">—</span><span class="key-metric-unit">dB</span></div>
+          <div class="key-metric"><span class="key-metric-label">Estado</span><span class="state-badge" id="commStateBadge">—</span></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row" id="commCharts" style="display:none">
+          <div class="chart-card"><div class="chart-card-title">Margen de enlace</div><div id="marginGauge"></div></div>
+          <div class="chart-card"><div class="chart-card-title">Eb/N₀ Comparación</div><div id="ebnoChart"></div></div>
+        </div>
+
+        <!-- Collapsible Details -->
+        <details class="tech-details" id="commDetailsSection" style="display:none">
+          <summary>Detalles técnicos completos</summary>
+          <div class="tech-details-body">
+            <div class="metric-table" id="commResults"></div>
+            <div class="interpretation-block" id="commInterpretation"></div>
+          </div>
+        </details>
+
+        <div class="warnings-section" id="commWarningsSection" style="display:none">
+          <div class="warnings-title">⚠ Advertencias</div>
+          <div class="warnings-list" id="commWarnings"></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn btn-secondary" data-goto="mission" type="button">← Misión</button>
+          <div class="step-actions-right"><button class="btn btn-primary" data-goto="power" type="button">Potencia →</button></div>
+        </div>
+      </section>
+
+      <!-- ===== STEP 3: POWER ===== -->
+      <section class="step-panel" data-step="power" id="power">
+        <div class="section-header">
+          <div class="section-overline">Paso 3</div>
+          <h2 class="section-title">Sistema eléctrico / potencia</h2>
+          <p class="section-desc">Balance energético, panel solar y batería — cálculo automático al modificar valores.</p>
+        </div>
+
+        <form id="powerForm" onsubmit="return false">
+          <fieldset>
+            <legend>Órbita eléctrica</legend>
+            <div class="field-group">
+              <div class="field-row field-row-3">
+                <div class="field field-unit"><label class="field-label" for="orbitDurationMin">Duración órbita</label><input id="orbitDurationMin" type="number" min="1" step="1" value="95"><span class="unit-tag">min</span></div>
+                <div class="field field-unit"><label class="field-label" for="sunlightMin">Luz solar</label><input id="sunlightMin" type="number" min="0" step="1" value="60"><span class="unit-tag">min</span></div>
+                <div class="field field-unit"><label class="field-label" for="eclipseMin">Eclipse</label><input id="eclipseMin" type="number" min="0" step="1" value="35"><span class="unit-tag">min</span></div>
+              </div>
+              <div class="field-row field-row-3">
+                <div class="field field-unit"><label class="field-label" for="powerMarginPct">Margen potencia</label><input id="powerMarginPct" type="number" min="0" step="1" value="20"><span class="unit-tag">%</span></div>
+                <div class="field field-unit"><label class="field-label" for="annualDegradationPct">Degradación anual</label><input id="annualDegradationPct" type="number" min="0" max="100" step="0.1" value="2.5"><span class="unit-tag">%</span></div>
+                <div class="field field-unit"><label class="field-label" for="busVoltageV">Voltaje bus</label><input id="busVoltageV" type="number" min="0" step="0.1" value="12"><span class="unit-tag">V</span></div>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Paneles solares</legend>
+            <div class="field-row field-row-4">
+              <div class="field field-unit"><label class="field-label" for="panelEfficiencyPct">Eficiencia</label><input id="panelEfficiencyPct" type="number" min="0" max="100" step="0.1" value="28"><span class="unit-tag">%</span></div>
+              <div class="field field-unit"><label class="field-label" for="solarIrradiance">Irradiancia</label><input id="solarIrradiance" type="number" min="0" step="1" value="1361"><span class="unit-tag">W/m²</span></div>
+              <div class="field field-unit"><label class="field-label" for="packingFactorPct">Empaquetam.</label><input id="packingFactorPct" type="number" min="0" max="100" step="1" value="85"><span class="unit-tag">%</span></div>
+              <div class="field field-unit"><label class="field-label" for="orientationFactorPct">Orientación</label><input id="orientationFactorPct" type="number" min="0" max="100" step="1" value="75"><span class="unit-tag">%</span></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Baterías</legend>
+            <div class="field-row field-row-4">
+              <div class="field field-unit"><label class="field-label" for="batteryDodPct">DoD máximo</label><input id="batteryDodPct" type="number" min="0" max="100" step="1" value="30"><span class="unit-tag">%</span></div>
+              <div class="field field-unit"><label class="field-label" for="batteryEfficiencyPct">Eficiencia bat.</label><input id="batteryEfficiencyPct" type="number" min="0" max="100" step="1" value="90"><span class="unit-tag">%</span></div>
+              <div class="field field-unit"><label class="field-label" for="batteryMarginPct">Margen bat.</label><input id="batteryMarginPct" type="number" min="0" step="1" value="20"><span class="unit-tag">%</span></div>
+              <div class="field field-unit"><label class="field-label" for="energyDensityWhKg">Dens. energía</label><input id="energyDensityWhKg" type="number" min="0" step="1" value="150"><span class="unit-tag">Wh/kg</span></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Consumo por subsistema</legend>
+            <div class="loads-header"><span class="loads-header-title">Cargas del vehículo</span><button class="btn btn-secondary" id="addLoadBtn" type="button">+ Agregar</button></div>
+            <div class="loads-table" id="loadsTable"></div>
+          </fieldset>
+        </form>
+
+        <!-- Key Metrics -->
+        <div class="key-metrics" id="powerKeyMetrics" style="display:none">
+          <div class="key-metric highlight"><span class="key-metric-label">Potencia promedio</span><span class="key-metric-value" id="pwrAvgVal">—</span><span class="key-metric-unit">W</span></div>
+          <div class="key-metric"><span class="key-metric-label">Batería</span><span class="key-metric-value" id="pwrBattVal">—</span><span class="key-metric-unit">Wh</span></div>
+          <div class="key-metric"><span class="key-metric-label">Panel solar</span><span class="key-metric-value" id="pwrPanelVal">—</span><span class="key-metric-unit">m²</span></div>
+          <div class="key-metric"><span class="key-metric-label">Estado</span><span class="state-badge" id="pwrStateBadge">—</span></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row" id="powerCharts" style="display:none">
+          <div class="chart-card"><div class="chart-card-title">Perfil orbital</div><div id="orbitTimeline"></div></div>
+          <div class="chart-card"><div class="chart-card-title">Consumo por subsistema</div><div id="loadsDonut"></div></div>
+        </div>
+
+        <!-- Collapsible Details -->
+        <details class="tech-details" id="powerDetailsSection" style="display:none">
+          <summary>Detalles técnicos completos</summary>
+          <div class="tech-details-body">
+            <div class="metric-table" id="powerResults"></div>
+            <div class="interpretation-block" id="powerInterpretation"></div>
+          </div>
+        </details>
+
+        <div class="warnings-section" id="powerWarningsSection" style="display:none">
+          <div class="warnings-title">⚠ Advertencias</div>
+          <div class="warnings-list" id="powerWarnings"></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn btn-secondary" data-goto="communications" type="button">← Comunicaciones</button>
+          <div class="step-actions-right"><button class="btn btn-primary" data-goto="results" type="button">Resultados →</button></div>
+        </div>
+      </section>
+
+      <!-- ===== STEP 4: RESULTS ===== -->
+      <section class="step-panel" data-step="results" id="summary">
+        <div class="section-header">
+          <div class="section-overline">Paso 4</div>
+          <h2 class="section-title">Resumen de dimensionamiento</h2>
+          <p class="section-desc">Resultados principales y recomendaciones del diseño.</p>
+        </div>
+        
+        <div class="summary-layout">
+          <!-- 3D Model in Summary -->
+          <div class="satellite-card summary-3d">
+            <div class="satellite-canvas" id="resultsCanvas"></div>
+            <div class="satellite-info">
+              <span class="satellite-type" id="resSatTypeLabel">CubeSat</span>
+              <span>Simulación de misión</span>
+            </div>
+          </div>
+          
+          <div class="summary-actions">
+            <div class="action-panel-heading">
+              <span>Reporte final</span>
+              <strong id="summaryActionState">Diseño preliminar</strong>
+            </div>
+            <button class="btn btn-secondary" id="copySummaryBtn" type="button">Copiar resumen</button>
+            <button class="btn btn-secondary" id="exportSummaryBtn" type="button">Exportar TXT</button>
+            <button class="btn btn-secondary" id="printBtn" type="button">Imprimir / guardar PDF</button>
+          </div>
+        </div>
+
+        <div id="summaryContent"><div class="empty-state">Los resultados se generan automáticamente al modificar parámetros.</div></div>
+        <div class="warnings-section"><div class="warnings-title">⚠ Advertencias consolidadas</div><div class="warnings-list" id="warningsList"><div class="warning-item info">Las advertencias aparecerán al ajustar los parámetros.</div></div></div>
+        
+        <div class="step-actions"><button class="btn btn-secondary" data-goto="power" type="button">← Potencia</button><div class="step-actions-right"><button class="btn btn-secondary" data-goto="reference" type="button">Referencia →</button></div></div>
+      </section>
+
+      <!-- ===== STEP 5: REFERENCE ===== -->
+      <section class="step-panel" data-step="reference" id="reference">
+        <div class="section-header">
+          <div class="section-overline">Referencia</div>
+          <h2 class="section-title">Fórmulas, supuestos y ayuda</h2>
+          <p class="section-desc">Trazabilidad de las expresiones y contexto académico.</p>
+        </div>
+        <div class="reference-grid">
+          <div class="reference-card"><h3>Comunicaciones</h3><ul class="formula-list"><li><code>Pt(dBW) = 10 log₁₀(Pt[W])</code></li><li><code>λ = c / f</code></li><li><code>FSPL = 20 log₁₀(d) + 20 log₁₀(f) + 92.45</code></li><li><code>Pr = Pt + Gt + Gr − FSPL − L</code></li><li><code>N₀ = 10 log₁₀(kT)</code></li><li><code>C/N₀ = Pr − N₀</code></li><li><code>Eb/N₀ = C/N₀ − 10 log₁₀(Rb)</code></li><li><code>Margen = Eb/N₀_calc − Eb/N₀_req</code></li></ul></div>
+          <div class="reference-card"><h3>Potencia</h3><ul class="formula-list"><li><code>P_avg = P_act × duty + P_stby × (1−duty)</code></li><li><code>P_total = ΣP_avg</code></li><li><code>P_design = P_total × (1 + margen)</code></li><li><code>E_orb = P_total × t_orb</code></li><li><code>E_ecl = P_ecl × t_ecl</code></li><li><code>E_bat = E_ecl / (DoD × η)</code></li><li><code>Ah = E_bat / V_bus</code></li><li><code>Área = P_sol / (S × η × f_o × f_p)</code></li><li><code>f_EOL = (1 − deg)^años</code></li></ul></div>
+        </div>
+        <div class="step-actions"><button class="btn btn-secondary" data-goto="results" type="button">← Resultados</button><div></div></div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="app-footer"><p>Herramienta académica para Ingeniería de Cohetes y Satélites. Los resultados son preliminares.</p></footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

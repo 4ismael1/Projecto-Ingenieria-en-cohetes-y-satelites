@@ -1,0 +1,11 @@
+# Entregables comprimidos locales
+*.zip
+
+# Capturas y artefactos temporales de QA local
+assets/qa-*.png
+assets/*screenshot*.png
+
+# Archivos temporales del sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/
